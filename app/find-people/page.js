@@ -1,4 +1,5 @@
 'use client';
+
 import { useMainContext } from '@/context/mainContext';
 import React, { useEffect, useState } from 'react';
 import { checkUserStatus } from './component/checkUserStatus';
@@ -7,18 +8,38 @@ import { unblockUser } from '../chats/components/unblockUser';
 import { updateUserDetails } from '../chats/components/updateAllUsersDetails';
 import { removeFriend } from '../chats/components/removeFriend';
 import SideBar from '../components/side-bar';
-import { getUserIdFromLocalStorage } from '../components/user/handleLocalStorage';
+import { useRouter } from 'next/navigation';
+import { useUsersListener } from './component/listenToTheUserId';
+import Link from 'next/link';
 
 export default function FindPeople() {
-  const { usersDetails = [], setUsersDetails, setLoading } = useMainContext();
+  const {
+    usersDetails = [],
+    setUsersDetails,
+    setLoading,
+    loading,
+  } = useMainContext();
   const [searchFor, setSearchFor] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
-  const [userId, setUserId] = useState(null);
+  const [userId, setUserId] = useState('');
 
+  // Call the custom hook to listen to users
+  const { users } = useUsersListener(); // Fetch users data
+
+  // Update the usersDetails state with the real-time data from Firestore
+
+  useEffect(() => {
+    if (users.length > 0) {
+      setUsersDetails(users);
+    }
+  }, [users, setUsersDetails]);
+
+  // Call updateUserDetails to fetch and update user details when component mounts
   useEffect(() => {
     updateUserDetails(setLoading, setUsersDetails);
   }, [setLoading, setUsersDetails]);
 
+  // Set the current user after the userDetails are updated
   useEffect(() => {
     if (Array.isArray(usersDetails) && userId) {
       setCurrentUser(
@@ -27,6 +48,7 @@ export default function FindPeople() {
     }
   }, [usersDetails, userId]);
 
+  // Counting mutual friends between the current user and other users
   const countMutualFriends = (user) => {
     if (!currentUser || !currentUser.friends || !user.friends) return 0;
 
@@ -36,6 +58,7 @@ export default function FindPeople() {
     return mutualFriends.length;
   };
 
+  // Filtering users based on search query and excluding current user
   const filteredUsers = usersDetails
     .filter(
       (user) =>
@@ -44,17 +67,21 @@ export default function FindPeople() {
     )
     .sort((a, b) => a.username.localeCompare(b.username));
 
+  const router = useRouter();
+
+  // Check user ID from localStorage and redirect to login if not found
   useEffect(() => {
-    setUserId(getUserIdFromLocalStorage());
-    if (!userId) {
-      window.location.pathname = '/login';
-      // Proceed with user-specific actions
+    const storedUserId = localStorage.getItem('userId');
+    if (storedUserId) {
+      setUserId(storedUserId); // Set userId if it exists
+    } else {
+      router.push('/login'); // Redirect to login if userId does not exist
     }
-  }, []);
+  }, [router]);
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden font-mono">
-      <div className="fixed z-10 h-full w-16 bg-gray-800 shadow-md shadow-gray-700">
+    <div className="relative h-screen w-screen overflow-hidden flex font-mono">
+      <div className="relative h-full w-16 bg-gray-800 duration-300 left-0 shadow-md shadow-gray-700">
         <SideBar />
       </div>
       <div className="relative h-full w-full overflow-y-auto text-black">
@@ -78,16 +105,16 @@ export default function FindPeople() {
             </div>
           </div>
           <div className="relative h-auto w-auto grid justify-center pt-8 gap-5 font-mono">
-            {filteredUsers.map((user) => {
+            {filteredUsers.map((user, index) => {
               const userStatus = checkUserStatus(user, currentUser);
               const mutualFriendsCount = countMutualFriends(user);
 
               return (
                 <div
-                  key={user.userId}
-                  className="relative h-20 w-[25rem] border rounded-xl flex justify-between"
+                  key={index}
+                  className="relative py-4 font-sans h-auto w-[25rem] border rounded-xl flex justify-between"
                 >
-                  <div className="relative h-full flex items-center">
+                  <div className="relative h-full flex">
                     <div className="relative pl-8">
                       <div className="relative text-sm font-extrabold text-gray-800">
                         {user.username}
@@ -99,9 +126,17 @@ export default function FindPeople() {
                             }`
                           : 'No mutual friends'}
                       </div>
+                      <div className="relative h-auto w-auto pt-4 flex">
+                        <Link
+                          href={`/profile?user_id=${user.userId}`}
+                          className="relative text-xs font-bold text-gray-600 hover:text-gray-800 cursor-pointer"
+                        >
+                          View Profile?
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                  <div className="relative pt-4 pr-5">
+                  <div className="relative pt-2 pr-5">
                     {userStatus === 'add' && (
                       <div
                         onClick={() =>

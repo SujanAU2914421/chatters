@@ -29,6 +29,10 @@ export default function Profile() {
     const userIdT = getUserIdFromLocalStorage();
 
     if (!userIdT) {
+      url.search = ''; // Resets the query string
+
+      window.history.replaceState({}, '', url);
+
       window.location.pathname = '/login';
       // Proceed with user-specific actions
     }
@@ -40,10 +44,10 @@ export default function Profile() {
     if (givenUid) {
       if (givenUid == userId) {
         return <ProfileOwn />;
-      } else if (givenUid.length < 20 && givenUid != '') {
-        return <NoUserFound />;
-      } else {
+      } else if (givenUid.length == 20 && givenUid != '') {
         return <OthersProfile />;
+      } else {
+        return <NoUserFound />;
       }
     } else {
       if (givenUid == '') {

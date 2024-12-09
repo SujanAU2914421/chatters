@@ -1,6 +1,5 @@
 export const checkUserStatus = (user, currentUser) => {
   if (!currentUser) {
-    console.log('No current user found.');
     return null;
   }
 

@@ -7,6 +7,8 @@ import { removeFriend } from './removeFriend';
 import { getUserDetails } from './getUserDetails';
 import { editUserBio } from './editBio';
 import { fetchFriendsDetails } from '@/app/components/user/getAllFriends';
+import { useMainContext } from '@/context/mainContext';
+import Link from 'next/link';
 
 export default function ProfileOwn() {
   const [editingBio, setEditingBio] = useState(false);
@@ -18,15 +20,21 @@ export default function ProfileOwn() {
   const [loggingOut, setLoggingOut] = useState(false);
   const [loading, setLoading] = useState(true);
   const [waitMessage, setWaitMessage] = useState(null);
+
+  const [fetchingFriends, setFetchingFriends] = useState(false);
+
   useEffect(() => {
     const getFriends = async () => {
       if (userId) {
+        setFetchingFriends(true);
         try {
           const friendsData = await fetchFriendsDetails(userId);
+
           setAllFriends(friendsData); // Store the friends data in the state
         } catch (error) {
           console.error('Error fetching friends details:', error);
         }
+        setFetchingFriends(false);
       }
     };
 
@@ -52,8 +60,6 @@ export default function ProfileOwn() {
 
   useEffect(() => {
     if (userDetail) {
-      console.log(userDetail);
-
       setUserBio(userDetail.bio);
     }
   }, [userDetail]);
@@ -106,23 +112,23 @@ export default function ProfileOwn() {
 
   useEffect(() => {
     const storedUserId = localStorage.getItem('userId');
-    setUserId(storedUserId);
-    const userId = getUserIdFromLocalStorage();
-    if (!userId) {
+    if (!storedUserId) {
       window.location.pathname = '/login';
       // Proceed with user-specific actions
+    } else {
+      setUserId(storedUserId);
+      insertParam('user_id', storedUserId);
     }
-    insertParam('user_id', userId);
   }, []);
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden font-sans">
+    <div className="relative h-screen w-screen overflow-hidden font-sans flex">
+      <div className="relative h-full w-16 bg-gray-800 duration-300 left-0 shadow-md shadow-gray-700">
+        <SideBar />
+      </div>
       <div className="relative h-full w-full">
-        <div className="fixed z-40 h-full w-16 bg-gray-800 shadow-md shadow-gray-700">
-          <SideBar />
-        </div>
         {loading && (
-          <div className="fixed z-50 bg-white/40 h-full w-full flex items-center justify-center">
+          <div className="fixed z-20 bg-white/40 h-full w-full flex items-center justify-center">
             <div className="relative">{waitMessage}</div>
           </div>
         )}
@@ -353,48 +359,66 @@ export default function ProfileOwn() {
                         </div>
                       </div>
                       <div className="relative h-auto w-full pt-4 grid gap-3">
-                        {allFriends
-                          ? allFriends.map((friend, index) => {
-                              return (
-                                <div
-                                  key={index}
-                                  className="relative w-96 flex justify-between py-4 px-4 group border border-gray-200 hover:border-gray-400 duration-200 rounded-md"
-                                >
-                                  <div className="relative grid gap-1">
-                                    <div className="relative h-auto text-sm font-bold text-gray-700">
-                                      {friend.username}
-                                    </div>
-                                    <div className="relative h-auto text-xs text-gray-500">
-                                      No mutual friends
-                                    </div>
-                                    <div className="relative h-auto w-auto flex mt-4">
-                                      <div
-                                        onClick={() => {
-                                          const params = new URLSearchParams({
-                                            user_id: friend.userId,
-                                          });
-                                          const url =
-                                            '/profile?' + params.toString();
-                                          window.location = url;
-                                        }}
-                                        className="relative hover:underline text-xs text-gray-600 font-bold cursor-pointer hover:text-gray-800"
-                                      >
-                                        View Profile?
-                                      </div>
-                                    </div>
+                        {!fetchingFriends ? (
+                          allFriends && allFriends.length > 0 ? (
+                            allFriends.map((friend, index) => (
+                              <div
+                                key={index}
+                                className="relative w-96 flex justify-between py-4 px-4 group border border-gray-200 hover:border-gray-400 duration-200 rounded-md"
+                              >
+                                <div className="relative grid gap-1">
+                                  <div className="relative h-auto text-sm font-bold text-gray-700">
+                                    {friend.username}
                                   </div>
-                                  <div
-                                    onClick={() => {
-                                      handleRemoveFriend(userId, friend.userId);
-                                    }}
-                                    className="relative flex font-medium h-8 w-28 rounded-md hover:bg-red-400 hover:text-white cursor-pointer text-[0.7rem] items-center justify-center"
-                                  >
-                                    Remove friend
+                                  <div className="relative h-auto text-xs text-gray-500">
+                                    No mutual friends
+                                  </div>
+                                  <div className="relative h-auto w-auto flex mt-4">
+                                    <div
+                                      onClick={() => {
+                                        const params = new URLSearchParams({
+                                          user_id: friend.userId,
+                                        });
+                                        const url =
+                                          '/profile?' + params.toString();
+                                        window.location = url;
+                                      }}
+                                      className="relative hover:underline text-xs text-gray-600 font-bold cursor-pointer hover:text-gray-800"
+                                    >
+                                      View Profile?
+                                    </div>
                                   </div>
                                 </div>
-                              );
-                            })
-                          : ''}
+                                <div
+                                  onClick={() => {
+                                    handleRemoveFriend(userId, friend.userId);
+                                  }}
+                                  className="relative flex font-medium h-8 w-28 rounded-md hover:bg-red-400 hover:text-white cursor-pointer text-[0.7rem] items-center justify-center"
+                                >
+                                  Remove friend
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="relative">
+                              <div className="relative text-sm font-bold text-gray-700">
+                                You dont have any friends
+                              </div>
+                              <div className="relative pt-4">
+                                <Link
+                                  href={`/find-people`}
+                                  className="relative cursor-pointer text-xs rounded flex items-center justify-center h-8 w-32 bg-gray-700 text-white"
+                                >
+                                  Add friends now?
+                                </Link>
+                              </div>
+                            </div>
+                          )
+                        ) : (
+                          <div className="relative text-sm font-bold text-gray-700">
+                            Loading Friends
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

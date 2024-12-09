@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import React from 'react';
 
 export default function SideBar() {
@@ -5,10 +6,8 @@ export default function SideBar() {
     <div className="relative h-full w-full">
       <div className="relative w-full pt-10">
         <div className="relative h-auto w-full grid gap-y-6">
-          <div
-            onClick={() => {
-              window.location.pathname = '/chats';
-            }}
+          <Link
+            href="/chats"
             className="relative w-full flex items-center justify-center cursor-pointer group"
           >
             <div className="relative text-white">
@@ -29,12 +28,10 @@ export default function SideBar() {
             <div className="absolute left-1 w-[2px] h-full rounded-r-full flex items-center">
               <div className="relative h-0 w-full group-hover:h-full rounded-full bg-white duration-100"></div>
             </div>
-          </div>
+          </Link>
           <div className="relative h-auto w-full grid gap-y-4">
-            <div
-              onClick={() => {
-                window.location.pathname = '/profile';
-              }}
+            <Link
+              href="/profile"
               className="relative w-full flex items-center justify-center cursor-pointer group"
             >
               <div className="relative text-white">
@@ -55,7 +52,7 @@ export default function SideBar() {
               <div className="absolute left-1 w-[2px] h-full rounded-r-full flex items-center">
                 <div className="relative h-0 w-full group-hover:h-full rounded-full bg-white duration-100"></div>
               </div>
-            </div>
+            </Link>
             <div className="relative h-auto w-full grid gap-y-5">
               {/* <div className="relative flex items-center justify-center cursor-pointer group">
 								<div className="relative text-white">
@@ -78,10 +75,9 @@ export default function SideBar() {
 									<div className="relative h-0 w-full group-hover:h-full rounded-full bg-white duration-100"></div>
 								</div>
 							</div> */}
-              <div
-                onClick={() => {
-                  window.location.pathname = '/find-people';
-                }}
+
+              <Link
+                href="/find-people"
                 className="relative flex items-center justify-center cursor-pointer group"
               >
                 <div className="relative text-white">
@@ -110,7 +106,7 @@ export default function SideBar() {
                 <div className="absolute left-1 w-[2px] h-full rounded-r-full flex items-center">
                   <div className="relative h-0 w-full group-hover:h-full rounded-full bg-white duration-100"></div>
                 </div>
-              </div>
+              </Link>
             </div>
           </div>
         </div>

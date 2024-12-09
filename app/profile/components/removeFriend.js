@@ -40,8 +40,6 @@ export const removeFriend = async (userId, friendId) => {
       friends: arrayRemove(friendToRemove),
     });
 
-    console.log('Friend removed successfully!');
-
     // Fetch the updated user document to get the new friends array
     const updatedUserSnap = await getDoc(userRef);
 
@@ -77,11 +75,9 @@ export const removeFriend = async (userId, friendId) => {
       await updateDoc(friendRef, {
         friends: updatedFriendList,
       });
-
-      console.log("Current user added back to the friend's list!");
     }
 
-    // Fetch full details for each remaining friend (excluding password)
+    // Fetch full details for each remaining friend and add `userId` from document ID
     const friendsDetails = await Promise.all(
       updatedFriends.map(async (friend) => {
         const friendRef = doc(db, 'users', friend.userId);
@@ -93,14 +89,18 @@ export const removeFriend = async (userId, friendId) => {
 
         const friendData = friendSnap.data();
         const { password, ...friendDetails } = friendData; // Exclude password
-        return friendDetails;
+
+        // Add Firestore document ID as userId
+        return {
+          ...friendDetails,
+          userId: friendSnap.id, // Attach document ID as userId
+        };
       })
     );
 
     // Filter out any null values in case a friend's data was not found
     return friendsDetails.filter((friend) => friend !== null);
   } catch (error) {
-    console.error('Error removing friend:', error);
     throw new Error('Failed to remove friend');
   }
 };

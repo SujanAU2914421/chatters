@@ -11,8 +11,10 @@ export default function MainContextProvider({ children }) {
   // const storedUserId = localStorage.getItem("userId"); // Assuming userId is stored in localStorage
 
   const [allUsersStatus, setAllUsersStatus] = useState(false);
-  const [usersDetails, setUsersDetails] = useState([]);
+  const [usersDetails, setUsersDetails] = useState();
   const [loading, setLoading] = useState(true);
+
+  const [isSidebarVisible, setIsSidebarVisible] = useState(false); // Track sidebar visibility
 
   return (
     <MainContext.Provider

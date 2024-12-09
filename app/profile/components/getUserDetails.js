@@ -6,7 +6,7 @@ export const getUserDetails = async (userId) => {
   try {
     // Ensure userId is provided
     if (!userId) {
-      throw new Error('User ID is required.');
+      return null;
     }
 
     // Reference to the user's document in the "users" collection
@@ -17,13 +17,12 @@ export const getUserDetails = async (userId) => {
 
     // Check if document exists
     if (!userSnap.exists()) {
-      throw new Error('User not found.');
+      return null;
     }
 
     // Return user data
     return userSnap.data();
   } catch (error) {
-    console.error('Error fetching user details:', error);
-    throw new Error('Failed to fetch user details.');
+    return null;
   }
 };

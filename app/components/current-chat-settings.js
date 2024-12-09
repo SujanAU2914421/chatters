@@ -8,9 +8,6 @@ export default function CurrentChatSettings({
   setLoading,
 }) {
   const [changingNickName, setChangingNickName] = useState(false);
-  useEffect(() => {
-    console.log(currentChat.username);
-  }, [currentChat]);
 
   // Check if the currentChat userId is in the userDetail's blocked list
   const isBlocked = userDetail?.blocked?.some(

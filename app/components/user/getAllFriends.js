@@ -9,7 +9,6 @@ export const fetchFriendsDetails = async (userId) => {
     const currentUserSnap = await getDoc(currentUserRef);
 
     if (!currentUserSnap.exists()) {
-      console.error('User not found');
       return [];
     }
 
@@ -17,7 +16,6 @@ export const fetchFriendsDetails = async (userId) => {
 
     // Step 2: Check if the user has friends
     if (!currentUser.friends || currentUser.friends.length === 0) {
-      console.log('No friends found for user:', userId);
       return [];
     }
 
@@ -38,11 +36,12 @@ export const fetchFriendsDetails = async (userId) => {
         const friendRef = doc(db, 'users', friendId);
         const friendSnap = await getDoc(friendRef);
 
+        console.log(friendSnap);
+
         if (friendSnap.exists()) {
           const { password, ...rest } = friendSnap.data(); // Exclude sensitive fields
           return { userId: friendId, ...rest };
         } else {
-          console.warn('Friend not found for userId:', friendId);
           return null; // Handle missing documents gracefully
         }
       });
@@ -53,7 +52,6 @@ export const fetchFriendsDetails = async (userId) => {
 
     return friendsDetails;
   } catch (error) {
-    console.error('Error fetching friends details:', error);
-    throw new Error('Could not fetch friends details');
+    throw new Error('Cant fetch friends');
   }
 };

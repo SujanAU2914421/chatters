@@ -9,7 +9,9 @@ export default function SendMessageField({
   const [loading, setLoading] = useState(false); // Track the loading state
 
   // Handles sending the message
-  const handleSendMessage = async () => {
+  const handleSendMessage = async (event) => {
+    event.preventDefault(); // Prevent default form submission
+
     if (message.trim() && !loading) {
       setLoading(true); // Disable button and set loading state
 
@@ -31,7 +33,10 @@ export default function SendMessageField({
 
   return (
     <div className="relative h-16 w-full shadow bg-white z-20">
-      <div className="relative h-full w-full flex items-center">
+      <form
+        onSubmit={handleSendMessage} // Handle the form submission
+        className="relative h-full w-full flex items-center"
+      >
         {/* Icon Buttons Section */}
         <div className="relative h-auto w-32 px-4 flex items-center justify-between">
           {['camera', 'link', 'microphone'].map((type, index) => (
@@ -115,15 +120,16 @@ export default function SendMessageField({
             </div>
           </div>
 
-          {/* Send Button */}
-          <div
-            onClick={handleSendMessage}
+          {/* Submit Button */}
+          <button
+            type="submit"
             className={`relative w-16 h-full flex items-center justify-center text-gray-700 cursor-pointer ${
               message.trim() && !loading
                 ? 'hover:text-gray-800'
                 : 'opacity-50 cursor-not-allowed'
             }`}
-            aria-disabled={!message.trim() || loading} // Disable button if message is empty or loading
+            disabled={!message.trim() || loading} // Disable button if message is empty or loading
+            aria-label="Send"
           >
             <svg
               width="20"
@@ -134,14 +140,13 @@ export default function SendMessageField({
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              aria-label="Send"
             >
               <line x1="22" y1="2" x2="11" y2="13"></line>
               <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
             </svg>
-          </div>
+          </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 }

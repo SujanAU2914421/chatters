@@ -25,11 +25,14 @@ export const blockUser = async (userIdToBlock, setUsersDetails, setLoading) => {
     const userDoc = await getDoc(userRef);
 
     if (userDoc.exists()) {
-      // Get the current user's blocked list
+      // Get the current user's data
       const currentUser = userDoc.data();
 
+      // Check if the user has a blocked list, if not, initialize an empty array
+      const blockedList = currentUser.blocked || [];
+
       // Check if the user to block already exists in the blocked list
-      const isUserBlocked = currentUser.blocked.some(
+      const isUserBlocked = blockedList.some(
         (blockedUser) => blockedUser.userId === userIdToBlock
       );
 
