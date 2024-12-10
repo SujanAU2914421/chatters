@@ -5,6 +5,7 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 import { firestore } from '@/app/components/firebase/firebase-config';
 import bcrypt from 'bcryptjs'; // Import bcryptjs
 import { checkIfLoggedIn } from '@/app/components/user/checkIfLoggedIn';
+import Link from 'next/link';
 
 const checkUserAndPassword = async (username, password) => {
   // Query Firestore for the user with the given username
@@ -50,17 +51,32 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [forgetPassword, setForgetPassword] = useState(false);
+  const [tryingToLogin, setTryingToLogin] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const submitHandler = () => {
     // Login function (stores user ID in localStorage)
     const loginUser = async (username, password) => {
-      const userId = await checkUserAndPassword(username, password);
-      if (userId) {
-        console.log('Login successful! User ID:', userId);
-        localStorage.setItem('userId', userId);
-        window.location.pathname = '/chats';
+      if (username && password) {
+        setTryingToLogin(true);
+        const userId = await checkUserAndPassword(username, password);
+        if (userId) {
+          localStorage.setItem('userId', userId);
+          window.location.pathname = '/chats';
+        } else {
+          setErrorMessage('Login failed. Check your username and password.');
+        }
+        setTryingToLogin(false);
       } else {
-        console.log('Login failed. Check your username and password.');
+        if (!username) {
+          if (!username && !password) {
+            setErrorMessage('Both username and password are necessary');
+          } else {
+            setErrorMessage('Username field empty');
+          }
+        } else {
+          setErrorMessage('Fill password');
+        }
       }
     };
 
@@ -75,6 +91,11 @@ export default function Login() {
 
   return (
     <div className="relative h-screen w-screen overflow-hidden font-mono">
+      {tryingToLogin && (
+        <div className="fixed bg-black/40 top-0 left-0 h-screen w-screen flex items-center z-30 justify-center">
+          Please wait ....
+        </div>
+      )}
       <div className="relative h-full w-full overflow-y-auto overflow-x-hidden bg-gradient-to-r from-gray-50 to-white">
         <div className="relative h-screen w-screen">
           <div className="relative h-full w-full flex">
@@ -126,27 +147,24 @@ export default function Login() {
                     What was your email used?
                   </div>
                   <div className="relative h-auto w-full pt-8">
-                    <div className="relative h-10 w-full border-b">
+                    <div className="relative h-10 w-full border rounded-md">
                       <input
                         onChange={(e) => {
                           setUsername(e.target.value);
                         }}
                         type="email"
-                        className="outline-none h-full w-full bg-transparent border-none text-xs"
+                        className="outline-none h-full w-full bg-transparent border-none text-xs px-4"
                         placeholder="email"
                       />
                     </div>
                   </div>
                   <div className="relative h-auto w-auto pt-8 flex">
                     <div
-                      onClick={(e) => {
-                        sendEmail(e);
-                      }}
                       className={`relative h-10 w-auto px-8 text-xs cursor-pointer shadow-md shadow-gray-40 ${
                         password != '' && username != ''
                           ? 'bg-gray-800'
                           : 'bg-gray-600'
-                      } text-white flex items-center justify-center select-none`}
+                      } text-white flex items-center justify-center select-none rounded-md`}
                     >
                       Verification code?
                     </div>
@@ -160,28 +178,40 @@ export default function Login() {
                     </div>
                   </div>
                   <div className="relative h-auto w-auto text-xs pt-16">
-                    Fill your Info
+                    {errorMessage ? (
+                      <div className="relative text-red-600">
+                        {errorMessage}
+                      </div>
+                    ) : (
+                      'Fill your Info'
+                    )}
                   </div>
                   <div className="relative h-auto w-full pt-8">
-                    <div className="relative h-10 w-full border-b">
+                    <div className="relative text-xs font-medium text-gray-600 pb-2">
+                      Username
+                    </div>
+                    <div className="relative h-10 w-full border rounded-md">
                       <input
                         onChange={(e) => {
                           setUsername(e.target.value);
                         }}
                         type="text"
-                        className="outline-none h-full w-full bg-transparent border-none text-xs"
+                        className="outline-none h-full w-full bg-transparent border-none text-xs px-4"
                         placeholder="username"
                       />
                     </div>
                   </div>
                   <div className="relative h-auto w-full pt-6">
-                    <div className="relative h-10 w-full border-b flex">
+                    <div className="relative text-xs font-medium text-gray-600 pb-2">
+                      Password
+                    </div>
+                    <div className="relative h-10 w-full border flex rounded-md">
                       <input
                         onChange={(e) => {
                           setPassword(e.target.value);
                         }}
                         type={showPassword ? 'text' : 'password'}
-                        className="outline-none h-full w-full bg-transparent border-none text-xs"
+                        className="outline-none h-full w-full bg-transparent border-none text-xs px-4"
                         placeholder="password"
                       />
                       <div
@@ -241,7 +271,7 @@ export default function Login() {
                         password != '' && username != ''
                           ? 'bg-gray-800'
                           : 'bg-gray-600'
-                      } text-white flex items-center justify-center select-none`}
+                      } text-white flex items-center justify-center select-none rounded-md`}
                     >
                       Login
                     </div>
@@ -250,14 +280,12 @@ export default function Login() {
                     <div className="relative h-auto w-auto text-xs cursor-pointer text-gray-600">
                       Don't have an account?
                       <div className="relative flex items-center pt-2 gap-3">
-                        <div
-                          onClick={() => {
-                            window.location.pathname = '/signup';
-                          }}
+                        <Link
+                          href="/signup"
                           className="relative hover:text-gray-800 text-gray-600 font-bold underline"
                         >
                           Sign up{' '}
-                        </div>
+                        </Link>
                         now to get started!
                       </div>
                     </div>
@@ -265,14 +293,6 @@ export default function Login() {
                 </div>
               )}
             </div>
-          </div>
-        </div>
-        <div className="relative h-auto w-full px-16">
-          <div className="realtive h-20 w-full border-t flex justify-between items-center text-xs">
-            <div className="relative">
-              A simple portfolio of developer Sujan
-            </div>
-            <div className="relative">@Chatters 2024</div>
           </div>
         </div>
       </div>

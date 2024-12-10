@@ -36,8 +36,6 @@ export const fetchFriendsDetails = async (userId) => {
         const friendRef = doc(db, 'users', friendId);
         const friendSnap = await getDoc(friendRef);
 
-        console.log(friendSnap);
-
         if (friendSnap.exists()) {
           const { password, ...rest } = friendSnap.data(); // Exclude sensitive fields
           return { userId: friendId, ...rest };

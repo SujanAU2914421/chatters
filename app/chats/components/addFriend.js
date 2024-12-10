@@ -10,13 +10,10 @@ export const addFriend = async (
 ) => {
   const currentUserId = localStorage.getItem('userId');
   if (!currentUserId) {
-    console.error('No user is logged in.');
     return;
   }
 
-  // Log usersDetails and currentUserId for debugging
-  console.log('currentUserId (from localStorage):', currentUserId);
-  console.log('usersDetails:', usersDetails);
+  // Log usersDetails and currentUserId for debuggin
 
   // Variables to store the current user and the friend to be added with full details
   let currentUser = null;
@@ -50,9 +47,6 @@ export const addFriend = async (
         );
 
         if (isAlreadyFriend) {
-          console.log(
-            `User ${friendUser.username} is already in your friends list.`
-          );
           return;
         }
 
@@ -67,20 +61,11 @@ export const addFriend = async (
           friends: [...currentFriendsArray, newFriendData], // Add the new friend
         });
 
-        console.log(
-          `User ${friendUser.username} has been added to your friends list.`
-        );
-
         // Update usersDetails after adding the friend
         updateUserDetails(setLoading, setUsersDetails);
       } else {
-        console.error('Current user document does not exist.');
       }
-    } catch (error) {
-      console.error('Error adding friend:', error.message);
-      console.error('Full error:', error);
-    }
+    } catch (error) {}
   } else {
-    console.error('One or both users not found in usersDetails.');
   }
 };
